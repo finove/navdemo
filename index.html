@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NAV Demo</title>
+    <script src="js/vue.global.3.2.38.js"></script>
+    <script src="store.js"></script>
+    <script src="js/naive-ui.2.33.2.js"></script>
+    <script src="js/vue-router.global.4.1.5.js"></script>
+    <!-- pages -->
+    <script src="component/loginbox.js"></script>
+    <script src="pages/page1.js"></script>
+    <script src="pages/about.js"></script>
+    <script src="home.js"></script>
+    <!-- routers -->
+    <script src="router.js"></script>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <div id="app">
+        <n-message-provider>
+            <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
+                <n-theme-editor>
+                    <n-layout>
+                        <n-layout-header>
+                            <n-space justify="space-between">
+                                <n-space>
+                                    <!-- 左边标题LOGO -->
+                                    <img />
+                                    <span class="nav-span">Nav Demo</span>
+                                </n-space>
+                                <n-space>
+                                    <!-- 中间菜单 -->
+                                    <n-menu v-model:default-value="activeKey" mode="horizontal"
+                                        :options="menuOptions" />
+                                </n-space>
+                                <n-space>
+                                    <!-- 右边通知栏 -->
+                                    <n-dropdown v-if="GlobalData.session.logined==true" :on-select="userOptionChange"
+                                        :options="userOptions">
+                                        <n-button>{{GlobalData.session.name}}</n-button>
+                                    </n-dropdown>
+                                    <n-popover v-if="GlobalData.session.logined==false" :show="showPopover"
+                                        placement="bottom" trigger="manual">
+                                        <template #trigger>
+                                            <n-button @click="showPopover = !showPopover">
+                                                登录
+                                            </n-button>
+                                        </template>
+                                        <loginbox @close-login="showPopover = !showPopover"></loginbox>
+                                    </n-popover>
+                                    <n-button @click="changeTheme()">
+                                        {{themeText !== "light"?"浅色":"深色"}}
+                                    </n-button>
+                                </n-space>
+                            </n-space>
+                        </n-layout-header>
+                        <n-layout-content embedded content-style="padding: 24px;">
+                            <router-view></router-view>
+                        </n-layout-content>
+                        <n-layout-footer>
+                            <n-space justify="center">
+                                <span>demo @testwork.cn 2022.09.16</span>
+                            </n-space>
+                        </n-layout-footer>
+                    </n-layout>
+                </n-theme-editor>
+            </n-config-provider>
+        </n-message-provider>
+    </div>
+    <script>
+        const { RouterLink } = VueRouter;
+        const { darkTheme, NThemeEditor, NConfigProvider, useMessage } = naive;
+        const themeOverrides = {
+            Button: {
+                "heightMedium": "42px",
+            }
+        }
+        const App = {
+            components: {
+                NThemeEditor,
+                Loginbox
+            },
+            methods: {
+            },
+            setup() {
+                // const message = useMessage();
+                themeText = ref('light');
+                theme = ref(null);
+
+                function userOptionChange(key) {
+                    if (key == 'logout') {
+                        GlobalData.setLoginOut();
+                    } else {
+                        changeTheme();
+                    }
+                }
+
+                function changeTheme() {
+                    // message.success('切换主题 ',themeText.value);
+                    if (themeText.value == 'light') {
+                        themeText.value = 'dark';
+                        theme.value = darkTheme;
+                    } else {
+                        themeText.value = 'light';
+                        theme.value = null;
+                    }
+                }
+
+                onMounted(() => {
+                    console.log(`the component is now mounted.`)
+                })
+                return {
+                    GlobalData,
+                    themeText,
+                    theme,
+                    darkTheme,
+                    themeOverrides,
+                    changeTheme,
+                    showPopover: ref(false),
+                    userOptionChange,
+                    userOptions,
+                    activeKey: 'menu-home',
+                    menuOptions
+                }
+            }
+        }
+
+        const app = Vue.createApp(App);
+        app.use(naive);
+        app.use(router);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
